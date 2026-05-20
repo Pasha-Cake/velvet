@@ -31,7 +31,7 @@ export function AdvantagesSection() {
             Почему выбирают нас
           </h2>
           <p className="text-lg text-primary-foreground/70 max-w-2xl mx-auto">
-            Более 20 лет мы создаем качественную одежду сцены для театров 
+            Более 15 лет мы создаем качественную одежду сцены для театров 
             и концертных залов по всей России
           </p>
         </motion.div>
@@ -69,9 +69,9 @@ export function AdvantagesSection() {
           className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 p-8 rounded-2xl bg-gradient-to-r from-gold/10 to-gold/5 border border-gold/20"
         >
           {[
-            { value: '500+', label: 'Реализованных проектов' },
-            { value: '85', label: 'Регионов присутствия' },
-            { value: '20+', label: 'Лет опыта' },
+            { value: '150+', label: 'Реализованных проектов' },
+            { value: '89', label: 'Регионов присутствия' },
+            { value: '15+', label: 'Лет опыта' },
             { value: '100%', label: 'Соблюдение сроков' },
           ].map((stat, index) => (
             <div key={index} className="text-center">
