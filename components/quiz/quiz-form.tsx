@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Progress } from '@/components/ui/progress'
-import { venueTypes, clothingTypes, fabricTypes, mountingTypes } from '@/lib/data'
+import { venueTypes, clothingTypes, fabricTypes } from '@/lib/data'
 
 // Validation schema
 const quizSchema = z.object({
@@ -20,8 +20,6 @@ const quizSchema = z.object({
   width: z.string().min(1, 'Укажите ширину'),
   height: z.string().min(1, 'Укажите высоту'),
   fabric: z.string().min(1, 'Выберите тип ткани'),
-  fireResistant: z.boolean(),
-  mounting: z.string().min(1, 'Выберите вариант монтажа'),
   name: z.string().min(2, 'Введите ваше имя'),
   email: z.string().email('Некорректный email'),
   phone: z.string().regex(/^\+7\s?\(?\d{3}\)?\s?\d{3}[-\s]?\d{2}[-\s]?\d{2}$/, 'Формат: +7 (999) 123-45-67'),
@@ -64,8 +62,6 @@ export function QuizForm({ onClose }: QuizFormProps) {
       width: '',
       height: '',
       fabric: '',
-      fireResistant: true,
-      mounting: '',
       name: '',
       email: '',
       phone: '',
@@ -344,8 +340,7 @@ export function QuizForm({ onClose }: QuizFormProps) {
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Если точных размеров нет — укажите примерные. 
-                  Наш специалист уточнит при выезде на замер.
+                  Если точных размеров нет — укажите примерные.
                 </p>
               </motion.div>
             )}
@@ -385,50 +380,6 @@ export function QuizForm({ onClose }: QuizFormProps) {
                   </div>
                   {errors.fabric && (
                     <p className="text-sm text-destructive mt-1">{errors.fabric.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="flex items-center gap-3 p-4 rounded-lg border border-border">
-                    <Checkbox
-                      checked={watchedValues.fireResistant}
-                      onCheckedChange={(checked) => setValue('fireResistant', !!checked)}
-                    />
-                    <div>
-                      <span className="text-sm font-medium">Огнезащитная пропитка</span>
-                      <p className="text-xs text-muted-foreground">
-                        Обязательна для театров и публичных мест
-                      </p>
-                    </div>
-                  </label>
-                </div>
-
-                <div>
-                  <h4 className="font-medium text-foreground mb-4">
-                    Нужен ли монтаж?
-                  </h4>
-                  <div className="space-y-2">
-                    {mountingTypes.map((mount) => (
-                      <label
-                        key={mount.value}
-                        className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                          watchedValues.mounting === mount.value
-                            ? 'border-accent bg-accent/5'
-                            : 'border-border hover:border-accent/50'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          {...register('mounting')}
-                          value={mount.value}
-                          className="sr-only"
-                        />
-                        <span className="text-sm">{mount.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                  {errors.mounting && (
-                    <p className="text-sm text-destructive mt-1">{errors.mounting.message}</p>
                   )}
                 </div>
               </motion.div>
@@ -542,12 +493,20 @@ export function QuizForm({ onClose }: QuizFormProps) {
                   )}
                 </div>
 
-                <p className="text-xs text-muted-foreground">
-                  Нажимая кнопку «Отправить», вы соглашаетесь с{' '}
-                  <a href="#" className="text-accent hover:underline">
-                    политикой конфиденциальности
-                  </a>
-                </p>
+                <div className="flex items-start gap-3 pt-2">
+                  <Checkbox id="privacy-policy" required />
+                  <label htmlFor="privacy-policy" className="text-xs text-muted-foreground leading-relaxed">
+                    Нажимая кнопку «Отправить», вы соглашаетесь с{' '}
+                    <a 
+                      href="https://velvet-pro.ru/politica.pdf" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-accent hover:underline"
+                    >
+                      политикой конфиденциальности
+                    </a>
+                  </label>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { sendContactEmail } from '@/lib/email'
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Имя обязательно'),
@@ -24,15 +25,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Here you would typically:
-    // 1. Save to database
-    // 2. Send email notification to sales team
-    // 3. Integrate with CRM (Bitrix24, amoCRM, etc.)
-    
     console.log('Contact form submission:', validated.data)
 
-    // Simulate processing
-    await new Promise(resolve => setTimeout(resolve, 300))
+    // Send email notification to info@velvet-pro.ru and pirogov@cn.ru
+    const emailSent = await sendContactEmail(validated.data)
+    
+    if (!emailSent) {
+      console.warn('Email notification failed but form was submitted')
+    }
 
     return NextResponse.json({ 
       success: true,

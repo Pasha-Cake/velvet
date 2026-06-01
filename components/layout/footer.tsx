@@ -1,14 +1,14 @@
 import Link from 'next/link'
-import { Phone, Mail, MapPin } from 'lucide-react'
+import { Phone, Mail, MapPin, MessageCircle, Send } from 'lucide-react'
 
 const navigation = {
   products: [
-    { name: 'Занавесы', href: '#' },
-    { name: 'Задники', href: '#' },
-    { name: 'Кулисы', href: '#' },
-    { name: 'Падуги', href: '#' },
-    { name: 'Горизонты', href: '#' },
-    { name: 'Драпировки', href: '#' },
+    { name: 'АРЗ', href: '#catalog' },
+    { name: 'Арлекин', href: '#catalog' },
+    { name: 'Кулисы', href: '#catalog' },
+    { name: 'Падуги', href: '#catalog' },
+    { name: 'Задники', href: '#catalog' },
+    { name: 'Порталы', href: '#catalog' },
   ],
   company: [
     { name: 'О компании', href: '#' },
@@ -17,8 +17,7 @@ const navigation = {
     { name: 'Контакты', href: '#contacts' },
   ],
   legal: [
-    { name: 'Политика конфиденциальности', href: '#' },
-    { name: 'Договор оферты', href: '#' },
+    { name: 'Политика конфиденциальности', href: 'https://velvet-pro.ru/politica.pdf', external: true },
   ],
 }
 
@@ -43,17 +42,35 @@ export function Footer() {
               для театров, концертных залов и домов культуры.
             </p>
             <div className="space-y-3">
-              <a href="tel:+78001234567" className="flex items-center gap-3 text-sm hover:text-gold transition-colors">
+              <a href="tel:+74954806072" className="flex items-center gap-3 text-sm hover:text-gold transition-colors">
                 <Phone className="h-4 w-4 text-gold" />
-                8 (800) 123-45-67
+                +7 495 480-60-72
               </a>
               <a href="mailto:info@velvet-pro.ru" className="flex items-center gap-3 text-sm hover:text-gold transition-colors">
                 <Mail className="h-4 w-4 text-gold" />
                 info@velvet-pro.ru
               </a>
+              <a 
+                href="https://wa.me/74954806072" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 text-sm hover:text-gold transition-colors"
+              >
+                <MessageCircle className="h-4 w-4 text-gold" />
+                WhatsApp
+              </a>
+              <a 
+                href="https://t.me/velvetpro" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 text-sm hover:text-gold transition-colors"
+              >
+                <Send className="h-4 w-4 text-gold" />
+                Telegram
+              </a>
               <div className="flex items-start gap-3 text-sm text-primary-foreground/60">
                 <MapPin className="h-4 w-4 text-gold shrink-0 mt-0.5" />
-                <span>г. Москва, ул. Театральная, д. 1, офис 100</span>
+                <span>г. Москва</span>
               </div>
             </div>
           </div>
@@ -101,8 +118,8 @@ export function Footer() {
               <p>Вс: Выходной</p>
             </div>
             <div className="mt-6 p-4 rounded-lg bg-gold/10 border border-gold/20">
-              <p className="text-sm text-gold font-medium">Бесплатный выезд замерщика</p>
-              <p className="text-xs text-primary-foreground/60 mt-1">по всей России</p>
+              <p className="text-sm text-gold font-medium">Бесплатная онлайн-консультация</p>
+              <p className="text-xs text-primary-foreground/60 mt-1">для регионов РФ</p>
             </div>
           </div>
         </div>
@@ -113,13 +130,15 @@ export function Footer() {
           </p>
           <div className="flex gap-6">
             {navigation.legal.map((item) => (
-              <Link 
+              <a 
                 key={item.name}
                 href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-sm text-primary-foreground/40 hover:text-gold transition-colors"
               >
                 {item.name}
-              </Link>
+              </a>
             ))}
           </div>
         </div>
