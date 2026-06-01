@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { Phone, Mail, MapPin, MessageCircle, Send } from 'lucide-react'
+import Image from 'next/image'
+import { Phone, Mail, MapPin, Send } from 'lucide-react'
 
 const navigation = {
   products: [
@@ -28,14 +29,14 @@ export function Footer() {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand */}
           <div>
-            <Link href="/" className="flex items-center gap-3 mb-6">
-              <div className="h-10 w-10 rounded-lg bg-gold flex items-center justify-center">
-                <span className="font-serif text-xl font-bold text-navy">V</span>
-              </div>
-              <div>
-                <span className="block font-serif text-xl font-bold">Velvet-Pro</span>
-                <span className="block text-xs text-primary-foreground/60 -mt-1">Одежда сцены</span>
-              </div>
+            <Link href="/" className="flex items-center mb-6">
+              <Image 
+                src="/images/logo.svg" 
+                alt="Velvet-Pro - Одежда сцены" 
+                width={125} 
+                height={53}
+                className="h-12 w-auto brightness-0 invert"
+              />
             </Link>
             <p className="text-sm text-primary-foreground/60 mb-6">
               Профессиональное изготовление театральных штор и драпировок 
@@ -51,13 +52,15 @@ export function Footer() {
                 info@velvet-pro.ru
               </a>
               <a 
-                href="https://wa.me/74954806072" 
+                href="https://max.ru/u/f9LHodD0cOKAibvv4xnLwydR6sh_3dfTyvofGfaGlDE43RYshE6ATx0BtoM" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 text-sm hover:text-gold transition-colors"
               >
-                <MessageCircle className="h-4 w-4 text-gold" />
-                WhatsApp
+                <svg className="h-4 w-4 text-gold" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                </svg>
+                MAX
               </a>
               <a 
                 href="https://t.me/velvetpro" 
@@ -70,7 +73,7 @@ export function Footer() {
               </a>
               <div className="flex items-start gap-3 text-sm text-primary-foreground/60">
                 <MapPin className="h-4 w-4 text-gold shrink-0 mt-0.5" />
-                <span>г. Москва</span>
+                <span>г. Москва, ул. Котляковская, 3с1</span>
               </div>
             </div>
           </div>
@@ -113,9 +116,7 @@ export function Footer() {
           <div>
             <h3 className="font-semibold mb-4">Режим работы</h3>
             <div className="space-y-2 text-sm text-primary-foreground/60">
-              <p>Пн-Пт: 9:00 - 18:00</p>
-              <p>Сб: 10:00 - 15:00</p>
-              <p>Вс: Выходной</p>
+              <p>Будни с 10:00 до 17:00</p>
             </div>
             <div className="mt-6 p-4 rounded-lg bg-gold/10 border border-gold/20">
               <p className="text-sm text-gold font-medium">Бесплатная онлайн-консультация</p>

@@ -27,7 +27,7 @@ export function TimelineSection() {
           {/* Line */}
           <div className="absolute top-16 left-0 right-0 h-0.5 bg-border" />
           
-          <div className="grid grid-cols-6 gap-4">
+          <div className="grid grid-cols-5 gap-4">
             {timelineSteps.map((step, index) => (
               <motion.div
                 key={step.step}
