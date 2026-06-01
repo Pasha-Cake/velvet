@@ -29,7 +29,7 @@ export function GallerySection() {
         </motion.div>
 
         {/* Gallery Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 gap-6">
           {galleryProjects.map((project, index) => (
             <motion.div
               key={project.id}

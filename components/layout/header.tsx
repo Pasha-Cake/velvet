@@ -1,9 +1,10 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, Phone, Mail, MessageCircle, Send } from 'lucide-react'
+import { Menu, X, Phone, Mail, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useQuiz } from '@/components/quiz/quiz-context'
 
@@ -30,13 +31,15 @@ export function Header() {
                 +7 495 480-60-72
               </a>
               <a 
-                href="https://wa.me/74954806072" 
+                href="https://max.ru/u/f9LHodD0cOKAibvv4xnLwydR6sh_3dfTyvofGfaGlDE43RYshE6ATx0BtoM" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 hover:text-gold transition-colors"
               >
-                <MessageCircle className="h-4 w-4" />
-                WhatsApp
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                </svg>
+                MAX
               </a>
               <a 
                 href="https://t.me/velvetpro" 
@@ -59,16 +62,16 @@ export function Header() {
 
       {/* Main nav - white background */}
       <nav className="bg-white border-b border-border shadow-sm">
-        <div className="mx-auto max-w-7xl px-6 py-4">
+        <div className="mx-auto max-w-7xl px-6 py-3">
           <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-gold flex items-center justify-center">
-                <span className="font-serif text-xl font-bold text-navy">V</span>
-              </div>
-              <div>
-                <span className="block font-serif text-xl font-bold text-foreground">Velvet-Pro</span>
-                <span className="block text-xs text-muted-foreground -mt-1">Одежда сцены</span>
-              </div>
+            <Link href="/" className="flex items-center">
+              <Image 
+                src="/images/logo.svg" 
+                alt="Velvet-Pro - Одежда сцены" 
+                width={125} 
+                height={53}
+                className="h-12 w-auto"
+              />
             </Link>
 
             <div className="hidden lg:flex items-center gap-8">
@@ -150,13 +153,15 @@ export function Header() {
                     info@velvet-pro.ru
                   </a>
                   <a 
-                    href="https://wa.me/74954806072" 
+                    href="https://max.ru/u/f9LHodD0cOKAibvv4xnLwydR6sh_3dfTyvofGfaGlDE43RYshE6ATx0BtoM" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="flex items-center gap-3 text-primary-foreground/70 hover:text-gold"
                   >
-                    <MessageCircle className="h-5 w-5" />
-                    WhatsApp
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                    </svg>
+                    MAX
                   </a>
                 </div>
                 <Button 
