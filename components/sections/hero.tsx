@@ -64,7 +64,7 @@ export function HeroSection() {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 text-base"
+                className="border-gold/50 text-gold hover:bg-gold/10 hover:text-gold text-base"
                 onClick={() => document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 <Play className="mr-2 h-5 w-5" />
