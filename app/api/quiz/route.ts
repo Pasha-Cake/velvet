@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { sendQuizEmail } from '@/lib/email'
 
 const quizSchema = z.object({
   venueType: z.string().min(1),
@@ -7,8 +8,6 @@ const quizSchema = z.object({
   width: z.string().min(1),
   height: z.string().min(1),
   fabric: z.string().min(1),
-  fireResistant: z.string().transform(val => val === 'true'),
-  mounting: z.string().min(1),
   name: z.string().min(2),
   email: z.string().email(),
   phone: z.string().min(10),
@@ -46,20 +45,18 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Here you would typically:
-    // 1. Save to database
-    // 2. Send email notification
-    // 3. Upload files to storage
-    // 4. Integrate with CRM
-    
     console.log('Quiz submission received:', {
       ...validated.data,
       filesCount: files.length,
       fileNames: files,
     })
 
-    // Simulate processing delay
-    await new Promise(resolve => setTimeout(resolve, 500))
+    // Send email notification to info@velvet-pro.ru and pirogov@cn.ru
+    const emailSent = await sendQuizEmail(validated.data, files)
+    
+    if (!emailSent) {
+      console.warn('Email notification failed but form was submitted')
+    }
 
     return NextResponse.json({ 
       success: true,
