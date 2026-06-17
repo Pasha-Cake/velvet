@@ -2,6 +2,28 @@ import nodemailer from 'nodemailer'
 
 const RECIPIENTS = ['info@velvet-pro.ru', 'pirogov@cn.ru']
 
+/**
+ * Экранирует пользовательский ввод для безопасной вставки в HTML письма.
+ * Защищает от HTML/XSS-инъекций и фишинговых ссылок в письмах сотрудникам.
+ */
+function escapeHtml(value: unknown): string {
+  if (value === null || value === undefined) return ''
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
+/**
+ * Экранирует значение для безопасного использования в атрибутах href (mailto:/tel:).
+ * Удаляет любые символы, способные изменить URL или внедрить скрипт.
+ */
+function escapeAttr(value: unknown): string {
+  return escapeHtml(String(value ?? '').replace(/["'<>`\s]/g, ''))
+}
+
 // Create transporter - will use environment variables for SMTP config
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -12,6 +34,14 @@ const transporter = nodemailer.createTransport({
     pass: process.env.SMTP_PASS,
   },
 })
+
+/**
+ * Очищает строку для использования в теме письма (Subject).
+ * Удаляет переносы строк для защиты от инъекции заголовков письма.
+ */
+function sanitizeSubject(value: unknown): string {
+  return String(value ?? '').replace(/[\r\n]+/g, ' ').trim().slice(0, 200)
+}
 
 interface QuizData {
   venueType: string
@@ -38,8 +68,8 @@ interface ContactData {
 
 export async function sendQuizEmail(data: QuizData, files?: string[]): Promise<boolean> {
   const clothingTypesText = Array.isArray(data.clothingTypes) 
-    ? data.clothingTypes.join(', ') 
-    : data.clothingTypes
+    ? data.clothingTypes.map(escapeHtml).join(', ') 
+    : escapeHtml(data.clothingTypes)
 
   const html = `
     <h2>Новая заявка с квиза на сайте Velvet-Pro</h2>
@@ -49,7 +79,7 @@ export async function sendQuizEmail(data: QuizData, files?: string[]): Promise<b
     <table style="border-collapse: collapse; width: 100%;">
       <tr>
         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Тип помещения:</strong></td>
-        <td style="padding: 8px; border: 1px solid #ddd;">${data.venueType}</td>
+        <td style="padding: 8px; border: 1px solid #ddd;">${escapeHtml(data.venueType)}</td>
       </tr>
       <tr>
         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Тип изделий:</strong></td>
@@ -57,48 +87,48 @@ export async function sendQuizEmail(data: QuizData, files?: string[]): Promise<b
       </tr>
       <tr>
         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Размеры:</strong></td>
-        <td style="padding: 8px; border: 1px solid #ddd;">${data.width} x ${data.height} м</td>
+        <td style="padding: 8px; border: 1px solid #ddd;">${escapeHtml(data.width)} x ${escapeHtml(data.height)} м</td>
       </tr>
       <tr>
         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Ткань:</strong></td>
-        <td style="padding: 8px; border: 1px solid #ddd;">${data.fabric}</td>
+        <td style="padding: 8px; border: 1px solid #ddd;">${escapeHtml(data.fabric)}</td>
       </tr>
     </table>
     <h3>Контактные данные</h3>
     <table style="border-collapse: collapse; width: 100%;">
       <tr>
         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Имя:</strong></td>
-        <td style="padding: 8px; border: 1px solid #ddd;">${data.name}</td>
+        <td style="padding: 8px; border: 1px solid #ddd;">${escapeHtml(data.name)}</td>
       </tr>
       <tr>
         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Email:</strong></td>
-        <td style="padding: 8px; border: 1px solid #ddd;"><a href="mailto:${data.email}">${data.email}</a></td>
+        <td style="padding: 8px; border: 1px solid #ddd;"><a href="mailto:${escapeAttr(data.email)}">${escapeHtml(data.email)}</a></td>
       </tr>
       <tr>
         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Телефон:</strong></td>
-        <td style="padding: 8px; border: 1px solid #ddd;"><a href="tel:${data.phone}">${data.phone}</a></td>
+        <td style="padding: 8px; border: 1px solid #ddd;"><a href="tel:${escapeAttr(data.phone)}">${escapeHtml(data.phone)}</a></td>
       </tr>
       ${data.company ? `
       <tr>
         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Компания:</strong></td>
-        <td style="padding: 8px; border: 1px solid #ddd;">${data.company}</td>
+        <td style="padding: 8px; border: 1px solid #ddd;">${escapeHtml(data.company)}</td>
       </tr>
       ` : ''}
       ${data.comment ? `
       <tr>
         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Комментарий:</strong></td>
-        <td style="padding: 8px; border: 1px solid #ddd;">${data.comment}</td>
+        <td style="padding: 8px; border: 1px solid #ddd;">${escapeHtml(data.comment)}</td>
       </tr>
       ` : ''}
     </table>
-    ${files && files.length > 0 ? `<p><strong>Прикрепленные файлы:</strong> ${files.join(', ')}</p>` : ''}
+    ${files && files.length > 0 ? `<p><strong>Прикрепленные файлы:</strong> ${files.map(escapeHtml).join(', ')}</p>` : ''}
   `
 
   try {
     await transporter.sendMail({
       from: process.env.SMTP_FROM || 'noreply@velvet-pro.ru',
       to: RECIPIENTS,
-      subject: `Новая заявка с квиза: ${data.name} - ${data.venueType}`,
+      subject: sanitizeSubject(`Новая заявка с квиза: ${data.name} - ${data.venueType}`),
       html,
     })
     return true
@@ -115,32 +145,32 @@ export async function sendContactEmail(data: ContactData): Promise<boolean> {
     <hr>
     ${data.productName ? `
     <h3>Товар</h3>
-    <p><strong>${data.productName}</strong></p>
+    <p><strong>${escapeHtml(data.productName)}</strong></p>
     ` : ''}
     <h3>Контактные данные</h3>
     <table style="border-collapse: collapse; width: 100%;">
       <tr>
         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Имя:</strong></td>
-        <td style="padding: 8px; border: 1px solid #ddd;">${data.name}</td>
+        <td style="padding: 8px; border: 1px solid #ddd;">${escapeHtml(data.name)}</td>
       </tr>
       <tr>
         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Email:</strong></td>
-        <td style="padding: 8px; border: 1px solid #ddd;"><a href="mailto:${data.email}">${data.email}</a></td>
+        <td style="padding: 8px; border: 1px solid #ddd;"><a href="mailto:${escapeAttr(data.email)}">${escapeHtml(data.email)}</a></td>
       </tr>
       <tr>
         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Телефон:</strong></td>
-        <td style="padding: 8px; border: 1px solid #ddd;"><a href="tel:${data.phone}">${data.phone}</a></td>
+        <td style="padding: 8px; border: 1px solid #ddd;"><a href="tel:${escapeAttr(data.phone)}">${escapeHtml(data.phone)}</a></td>
       </tr>
       ${data.company ? `
       <tr>
         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Компания:</strong></td>
-        <td style="padding: 8px; border: 1px solid #ddd;">${data.company}</td>
+        <td style="padding: 8px; border: 1px solid #ddd;">${escapeHtml(data.company)}</td>
       </tr>
       ` : ''}
       ${data.message ? `
       <tr>
         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Сообщение:</strong></td>
-        <td style="padding: 8px; border: 1px solid #ddd;">${data.message}</td>
+        <td style="padding: 8px; border: 1px solid #ddd;">${escapeHtml(data.message)}</td>
       </tr>
       ` : ''}
     </table>
@@ -150,7 +180,7 @@ export async function sendContactEmail(data: ContactData): Promise<boolean> {
     await transporter.sendMail({
       from: process.env.SMTP_FROM || 'noreply@velvet-pro.ru',
       to: RECIPIENTS,
-      subject: `Заявка на товар: ${data.productName || 'Общий запрос'} - ${data.name}`,
+      subject: sanitizeSubject(`Заявка на товар: ${data.productName || 'Общий запрос'} - ${data.name}`),
       html,
     })
     return true
