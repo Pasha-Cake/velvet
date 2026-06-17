@@ -2,17 +2,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { sendQuizEmail } from '@/lib/email'
 
+// Запрещаем HTML-теги в текстовых полях как дополнительный слой защиты
+const noHtml = (min: number, max: number, msg?: string) =>
+  z.string().min(min, msg).max(max).refine((v) => !/[<>]/.test(v), { message: 'Недопустимые символы' })
+
 const quizSchema = z.object({
-  venueType: z.string().min(1),
+  venueType: noHtml(1, 100),
   clothingTypes: z.string().transform(val => JSON.parse(val)),
-  width: z.string().min(1),
-  height: z.string().min(1),
-  fabric: z.string().min(1),
-  name: z.string().min(2),
-  email: z.string().email(),
-  phone: z.string().min(10),
-  company: z.string().optional(),
-  comment: z.string().optional(),
+  width: noHtml(1, 20),
+  height: noHtml(1, 20),
+  fabric: noHtml(1, 100),
+  name: noHtml(2, 100),
+  email: z.string().email().max(150),
+  phone: noHtml(10, 30),
+  company: noHtml(0, 150).optional(),
+  comment: noHtml(0, 2000).optional(),
 })
 
 export async function POST(request: NextRequest) {
