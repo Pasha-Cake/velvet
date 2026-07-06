@@ -66,7 +66,13 @@ interface ContactData {
   productName?: string
 }
 
-export async function sendQuizEmail(data: QuizData, files?: string[]): Promise<boolean> {
+interface EmailAttachment {
+  filename: string
+  content: Buffer
+  contentType?: string
+}
+
+export async function sendQuizEmail(data: QuizData, attachments?: EmailAttachment[]): Promise<boolean> {
   const clothingTypesText = Array.isArray(data.clothingTypes) 
     ? data.clothingTypes.map(escapeHtml).join(', ') 
     : escapeHtml(data.clothingTypes)
@@ -121,7 +127,7 @@ export async function sendQuizEmail(data: QuizData, files?: string[]): Promise<b
       </tr>
       ` : ''}
     </table>
-    ${files && files.length > 0 ? `<p><strong>Прикрепленные файлы:</strong> ${files.map(escapeHtml).join(', ')}</p>` : ''}
+    ${attachments && attachments.length > 0 ? `<p><strong>Прикрепленные файлы:</strong> ${attachments.map((a) => escapeHtml(a.filename)).join(', ')}</p>` : ''}
   `
 
   try {
@@ -130,6 +136,9 @@ export async function sendQuizEmail(data: QuizData, files?: string[]): Promise<b
       to: RECIPIENTS,
       subject: sanitizeSubject(`Новая заявка с квиза: ${data.name} - ${data.venueType}`),
       html,
+      ...(attachments && attachments.length > 0
+        ? { attachments: attachments.map((a) => ({ filename: a.filename, content: a.content, contentType: a.contentType })) }
+        : {}),
     })
     return true
   } catch (error) {

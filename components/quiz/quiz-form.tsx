@@ -29,6 +29,12 @@ const quizSchema = z.object({
 
 type QuizData = z.infer<typeof quizSchema>
 
+// Ограничения на вложения (зеркалят серверные правила)
+const MAX_FILES = 5
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 МБ
+const MAX_TOTAL_SIZE = 15 * 1024 * 1024 // 15 МБ
+const ALLOWED_EXTENSIONS = ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png']
+
 interface QuizFormProps {
   onClose: () => void
 }
@@ -46,6 +52,8 @@ export function QuizForm({ onClose }: QuizFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [files, setFiles] = useState<File[]>([])
+  const [fileErrors, setFileErrors] = useState<string[]>([])
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const {
     register,
@@ -105,7 +113,8 @@ export function QuizForm({ onClose }: QuizFormProps) {
 
   const onSubmit = async (data: QuizData) => {
     setIsSubmitting(true)
-    
+    setSubmitError(null)
+
     try {
       const formData = new FormData()
       Object.entries(data).forEach(([key, value]) => {
@@ -122,11 +131,26 @@ export function QuizForm({ onClose }: QuizFormProps) {
         body: formData,
       })
 
-      if (!response.ok) throw new Error('Ошибка отправки')
-      
+      if (!response.ok) {
+        if (response.status === 413) {
+          setSubmitError('Вложения слишком большие для отправки. Уменьшите размер файлов или отправьте их на info@velvet-pro.ru')
+          return
+        }
+        let message = 'Не удалось отправить заявку. Попробуйте ещё раз или напишите на info@velvet-pro.ru'
+        try {
+          const body = await response.json()
+          if (body?.error) message = body.error
+        } catch {
+          // тело не JSON — используем сообщение по умолчанию
+        }
+        setSubmitError(message)
+        return
+      }
+
       setIsSuccess(true)
     } catch (error) {
       console.error('Submit error:', error)
+      setSubmitError('Не удалось отправить заявку. Проверьте подключение и попробуйте ещё раз.')
     } finally {
       setIsSubmitting(false)
     }
@@ -134,8 +158,40 @@ export function QuizForm({ onClose }: QuizFormProps) {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newFiles = Array.from(e.target.files || [])
-    const validFiles = newFiles.filter(file => file.size <= 10 * 1024 * 1024) // 10MB limit
-    setFiles(prev => [...prev, ...validFiles].slice(0, 5)) // Max 5 files
+    const errors: string[] = []
+    const accepted: File[] = []
+
+    let totalSize = files.reduce((sum, f) => sum + f.size, 0)
+
+    for (const file of newFiles) {
+      const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase()
+
+      if (!ALLOWED_EXTENSIONS.includes(ext)) {
+        errors.push(`«${file.name}»: недопустимый формат (разрешены PDF, DOC, DOCX, JPG, PNG)`)
+        continue
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        errors.push(`«${file.name}»: размер больше 10 МБ`)
+        continue
+      }
+      if (files.length + accepted.length >= MAX_FILES) {
+        errors.push(`«${file.name}»: можно прикрепить не более ${MAX_FILES} файлов`)
+        continue
+      }
+      if (totalSize + file.size > MAX_TOTAL_SIZE) {
+        errors.push(`«${file.name}»: суммарный размер файлов превысит 15 МБ`)
+        continue
+      }
+      totalSize += file.size
+      accepted.push(file)
+    }
+
+    if (accepted.length > 0) {
+      setFiles(prev => [...prev, ...accepted])
+    }
+    setFileErrors(errors)
+    // Сбрасываем значение, чтобы тот же файл можно было выбрать повторно
+    e.target.value = ''
   }
 
   const removeFile = (index: number) => {
@@ -475,6 +531,13 @@ export function QuizForm({ onClose }: QuizFormProps) {
                       </p>
                     </label>
                   </div>
+                  {fileErrors.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      {fileErrors.map((error, index) => (
+                        <p key={index} className="text-sm text-destructive">{error}</p>
+                      ))}
+                    </div>
+                  )}
                   {files.length > 0 && (
                     <div className="mt-2 space-y-1">
                       {files.map((file, index) => (
@@ -511,6 +574,13 @@ export function QuizForm({ onClose }: QuizFormProps) {
             )}
           </AnimatePresence>
         </div>
+
+        {/* Submit error */}
+        {submitError && currentStep === steps.length && (
+          <div className="px-6 pb-2">
+            <p className="text-sm text-destructive" role="alert">{submitError}</p>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="sticky bottom-0 bg-card border-t border-border px-6 py-4 flex justify-between">
