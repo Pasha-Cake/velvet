@@ -33,6 +33,13 @@ const transporter = nodemailer.createTransport({
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
+  // Таймауты, чтобы отправка не зависала бесконечно при проблемах с SMTP
+  connectionTimeout: 15000, // 15с на установку соединения
+  greetingTimeout: 15000, // 15с на приветствие сервера
+  socketTimeout: 30000, // 30с на передачу данных (важно для вложений)
+  // Временное подробное логирование SMTP для диагностики отправки вложений
+  logger: true,
+  debug: true,
 })
 
 /**
