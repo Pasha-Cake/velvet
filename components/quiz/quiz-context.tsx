@@ -30,7 +30,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     <QuizContext.Provider value={{ openQuiz, closeQuiz, isOpen }}>
       {children}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0">
+        <DialogContent showCloseButton={false} className="max-w-2xl max-h-[90vh] overflow-y-auto p-0">
           <DialogTitle className="sr-only">Расчет стоимости проекта</DialogTitle>
           <QuizForm onClose={closeQuiz} />
         </DialogContent>

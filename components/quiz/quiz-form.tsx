@@ -1,16 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { ArrowLeft, ArrowRight, Check, X, Upload, Loader2 } from 'lucide-react'
+import { Check, X, Paperclip, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Progress } from '@/components/ui/progress'
 import { venueTypes, clothingTypes, fabricTypes } from '@/lib/data'
 
 // Validation schema
@@ -39,16 +38,7 @@ interface QuizFormProps {
   onClose: () => void
 }
 
-const steps = [
-  { id: 1, title: 'Тип помещения' },
-  { id: 2, title: 'Тип изделия' },
-  { id: 3, title: 'Размеры' },
-  { id: 4, title: 'Опции' },
-  { id: 5, title: 'Контакты' },
-]
-
 export function QuizForm({ onClose }: QuizFormProps) {
-  const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [files, setFiles] = useState<File[]>([])
@@ -61,7 +51,6 @@ export function QuizForm({ onClose }: QuizFormProps) {
     watch,
     setValue,
     formState: { errors },
-    trigger,
   } = useForm<QuizData>({
     resolver: zodResolver(quizSchema),
     defaultValues: {
@@ -79,37 +68,6 @@ export function QuizForm({ onClose }: QuizFormProps) {
   })
 
   const watchedValues = watch()
-  const progress = (currentStep / steps.length) * 100
-
-  const validateCurrentStep = async () => {
-    switch (currentStep) {
-      case 1:
-        return await trigger('venueType')
-      case 2:
-        return await trigger('clothingTypes')
-      case 3:
-        return await trigger(['width', 'height'])
-      case 4:
-        return await trigger(['fabric', 'mounting'])
-      case 5:
-        return await trigger(['name', 'email', 'phone'])
-      default:
-        return true
-    }
-  }
-
-  const nextStep = async () => {
-    const isValid = await validateCurrentStep()
-    if (isValid && currentStep < steps.length) {
-      setCurrentStep(currentStep + 1)
-    }
-  }
-
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1)
-    }
-  }
 
   const onSubmit = async (data: QuizData) => {
     setIsSubmitting(true)
@@ -239,379 +197,279 @@ export function QuizForm({ onClose }: QuizFormProps) {
   return (
     <div className="relative">
       {/* Header */}
-      <div className="sticky top-0 bg-card z-10 px-6 pt-6 pb-4 border-b border-border">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-foreground">Расчет стоимости</h3>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        
-        <div className="flex items-center gap-2 mb-2">
-          {steps.map((step) => (
-            <div
-              key={step.id}
-              className={`flex-1 h-1 rounded-full transition-colors ${
-                step.id <= currentStep ? 'bg-accent' : 'bg-muted'
-              }`}
-            />
+      <div className="bg-navy px-6 py-6 sm:px-8">
+        <button
+          onClick={onClose}
+          aria-label="Закрыть"
+          className="absolute top-4 right-4 text-primary-foreground/60 hover:text-primary-foreground transition-colors"
+        >
+          <X className="h-5 w-5" />
+        </button>
+        <h3 className="font-serif text-xl sm:text-2xl font-bold text-primary-foreground text-balance pr-8">
+          Рассчитайте стоимость одежды сцены
+        </h3>
+        <p className="mt-2 text-sm text-primary-foreground/75 leading-relaxed">
+          Заполните форму — в течение <span className="font-semibold text-gold-light">24 часов</span> пришлём
+          коммерческое предложение с точной стоимостью
+        </p>
+        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5">
+          {['Бесплатно', 'Расчет от технолога', '150+ проектов'].map((perk) => (
+            <span key={perk} className="flex items-center gap-1.5 text-xs text-primary-foreground/85">
+              <Check className="h-3.5 w-3.5 text-gold" />
+              {perk}
+            </span>
           ))}
         </div>
-        <p className="text-sm text-muted-foreground">
-          Шаг {currentStep} из {steps.length}: {steps[currentStep - 1].title}
-        </p>
       </div>
 
       {/* Form content */}
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="p-6 min-h-[300px]">
-          <AnimatePresence mode="wait">
-            {/* Step 1: Venue Type */}
-            {currentStep === 1 && (
-              <motion.div
-                key="step1"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-4"
+      <form onSubmit={handleSubmit(onSubmit)} className="px-6 py-6 sm:px-8">
+        {/* О проекте */}
+        <div className="mb-6">
+          <p className="text-xs font-bold uppercase tracking-wider text-gold-dark mb-3">О проекте</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="sm:col-span-1">
+              <label htmlFor="venueType" className="block text-sm font-semibold text-foreground mb-1.5">
+                Тип помещения <span className="text-destructive">*</span>
+              </label>
+              <select
+                id="venueType"
+                {...register('venueType')}
+                className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               >
-                <h4 className="font-medium text-foreground mb-4">
-                  Какой тип помещения вы оснащаете?
-                </h4>
-                <div className="grid grid-cols-2 gap-3">
-                  {venueTypes.map((venue) => (
-                    <label
-                      key={venue.value}
-                      className={`flex items-center p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                        watchedValues.venueType === venue.value
-                          ? 'border-accent bg-accent/5'
-                          : 'border-border hover:border-accent/50'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        {...register('venueType')}
-                        value={venue.value}
-                        className="sr-only"
-                      />
-                      <span className="text-sm">{venue.label}</span>
-                    </label>
-                  ))}
-                </div>
-                {errors.venueType && (
-                  <p className="text-sm text-destructive">{errors.venueType.message}</p>
-                )}
-              </motion.div>
-            )}
+                <option value="">Выберите...</option>
+                {venueTypes.map((venue) => (
+                  <option key={venue.value} value={venue.value}>{venue.label}</option>
+                ))}
+              </select>
+              {errors.venueType && (
+                <p className="text-xs text-destructive mt-1">{errors.venueType.message}</p>
+              )}
+            </div>
+            <div>
+              <label htmlFor="width" className="block text-sm font-semibold text-foreground mb-1.5">
+                Ширина портала, м <span className="text-destructive">*</span>
+              </label>
+              <Input id="width" {...register('width')} placeholder="например, 12" type="number" step="0.1" />
+              {errors.width && (
+                <p className="text-xs text-destructive mt-1">{errors.width.message}</p>
+              )}
+            </div>
+            <div>
+              <label htmlFor="height" className="block text-sm font-semibold text-foreground mb-1.5">
+                Высота портала, м <span className="text-destructive">*</span>
+              </label>
+              <Input id="height" {...register('height')} placeholder="например, 8" type="number" step="0.1" />
+              {errors.height && (
+                <p className="text-xs text-destructive mt-1">{errors.height.message}</p>
+              )}
+            </div>
+          </div>
+        </div>
 
-            {/* Step 2: Clothing Types */}
-            {currentStep === 2 && (
-              <motion.div
-                key="step2"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-4"
-              >
-                <h4 className="font-medium text-foreground mb-4">
-                  Какие элементы одежды сцены вам нужны?
-                </h4>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Можно выбрать несколько вариантов
-                </p>
-                <div className="grid grid-cols-2 gap-3">
-                  {clothingTypes.map((type) => {
-                    const isSelected = watchedValues.clothingTypes?.includes(type.value)
-                    return (
-                      <label
-                        key={type.value}
-                        className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                          isSelected
-                            ? 'border-accent bg-accent/5'
-                            : 'border-border hover:border-accent/50'
-                        }`}
-                      >
-                        <Checkbox
-                          checked={isSelected}
-                          onCheckedChange={(checked) => {
-                            const current = watchedValues.clothingTypes || []
-                            if (checked) {
-                              setValue('clothingTypes', [...current, type.value])
-                            } else {
-                              setValue('clothingTypes', current.filter((v) => v !== type.value))
-                            }
-                          }}
-                        />
-                        <span className="text-sm">{type.label}</span>
-                      </label>
-                    )
-                  })}
-                </div>
-                {errors.clothingTypes && (
-                  <p className="text-sm text-destructive">{errors.clothingTypes.message}</p>
-                )}
-              </motion.div>
-            )}
-
-            {/* Step 3: Dimensions */}
-            {currentStep === 3 && (
-              <motion.div
-                key="step3"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-6"
-              >
-                <h4 className="font-medium text-foreground mb-4">
-                  Укажите примерные размеры сцены
-                </h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Ширина портала (м)
-                    </label>
-                    <Input
-                      {...register('width')}
-                      placeholder="например, 12"
-                      type="number"
-                      step="0.1"
-                    />
-                    {errors.width && (
-                      <p className="text-sm text-destructive mt-1">{errors.width.message}</p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Высота портала (м)
-                    </label>
-                    <Input
-                      {...register('height')}
-                      placeholder="например, 8"
-                      type="number"
-                      step="0.1"
-                    />
-                    {errors.height && (
-                      <p className="text-sm text-destructive mt-1">{errors.height.message}</p>
-                    )}
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Если точных размеров нет — укажите примерные.
-                </p>
-              </motion.div>
-            )}
-
-            {/* Step 4: Options */}
-            {currentStep === 4 && (
-              <motion.div
-                key="step4"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-6"
-              >
-                <div>
-                  <h4 className="font-medium text-foreground mb-4">
-                    Предпочтения по ткани
-                  </h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    {fabricTypes.map((fabric) => (
-                      <label
-                        key={fabric.value}
-                        className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                          watchedValues.fabric === fabric.value
-                            ? 'border-accent bg-accent/5'
-                            : 'border-border hover:border-accent/50'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          {...register('fabric')}
-                          value={fabric.value}
-                          className="sr-only"
-                        />
-                        <span className="text-sm">{fabric.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                  {errors.fabric && (
-                    <p className="text-sm text-destructive mt-1">{errors.fabric.message}</p>
-                  )}
-                </div>
-              </motion.div>
-            )}
-
-            {/* Step 5: Contacts */}
-            {currentStep === 5 && (
-              <motion.div
-                key="step5"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-4"
-              >
-                <h4 className="font-medium text-foreground mb-4">
-                  Контактные данные
-                </h4>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2 sm:col-span-1">
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Ваше имя *
-                    </label>
-                    <Input {...register('name')} placeholder="Иван Петров" />
-                    {errors.name && (
-                      <p className="text-sm text-destructive mt-1">{errors.name.message}</p>
-                    )}
-                  </div>
-                  <div className="col-span-2 sm:col-span-1">
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Организация
-                    </label>
-                    <Input {...register('company')} placeholder="Название театра / ДК" />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2 sm:col-span-1">
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Email *
-                    </label>
-                    <Input {...register('email')} type="email" placeholder="email@example.com" />
-                    {errors.email && (
-                      <p className="text-sm text-destructive mt-1">{errors.email.message}</p>
-                    )}
-                  </div>
-                  <div className="col-span-2 sm:col-span-1">
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      Телефон *
-                    </label>
-                    <Input
-                      {...register('phone')}
-                      placeholder="+7 (999) 123-45-67"
-                      onChange={(e) => {
-                        const formatted = formatPhone(e.target.value)
-                        setValue('phone', formatted)
-                      }}
-                    />
-                    {errors.phone && (
-                      <p className="text-sm text-destructive mt-1">{errors.phone.message}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Комментарий
-                  </label>
-                  <Textarea
-                    {...register('comment')}
-                    placeholder="Дополнительная информация о проекте"
-                    rows={3}
+        {/* Что нужно изготовить */}
+        <div className="mb-6">
+          <p className="text-sm font-semibold text-foreground mb-2">
+            Что нужно изготовить{' '}
+            <span className="font-normal text-muted-foreground">(можно несколько)</span>{' '}
+            <span className="text-destructive">*</span>
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
+            {clothingTypes.map((type) => {
+              const isSelected = watchedValues.clothingTypes?.includes(type.value)
+              return (
+                <label
+                  key={type.value}
+                  className="flex items-center gap-2.5 py-1.5 px-2 rounded-md cursor-pointer hover:bg-secondary transition-colors"
+                >
+                  <Checkbox
+                    checked={isSelected}
+                    onCheckedChange={(checked) => {
+                      const current = watchedValues.clothingTypes || []
+                      if (checked) {
+                        setValue('clothingTypes', [...current, type.value], { shouldValidate: true })
+                      } else {
+                        setValue('clothingTypes', current.filter((v) => v !== type.value), { shouldValidate: true })
+                      }
+                    }}
                   />
-                </div>
+                  <span className="text-sm text-foreground">{type.label}</span>
+                </label>
+              )
+            })}
+          </div>
+          {errors.clothingTypes && (
+            <p className="text-xs text-destructive mt-1">{errors.clothingTypes.message}</p>
+          )}
+        </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Прикрепить файлы
-                  </label>
-                  <div className="border-2 border-dashed border-border rounded-lg p-4 text-center">
-                    <input
-                      type="file"
-                      multiple
-                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                      onChange={handleFileChange}
-                      className="hidden"
-                      id="file-upload"
-                    />
-                    <label htmlFor="file-upload" className="cursor-pointer">
-                      <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                      <p className="text-sm text-muted-foreground">
-                        Чертежи, фото, ТЗ (до 10 Мб)
-                      </p>
-                    </label>
-                  </div>
-                  {fileErrors.length > 0 && (
-                    <div className="mt-2 space-y-1">
-                      {fileErrors.map((error, index) => (
-                        <p key={index} className="text-sm text-destructive">{error}</p>
-                      ))}
-                    </div>
-                  )}
-                  {files.length > 0 && (
-                    <div className="mt-2 space-y-1">
-                      {files.map((file, index) => (
-                        <div key={index} className="flex items-center justify-between text-sm bg-muted p-2 rounded">
-                          <span className="truncate">{file.name}</span>
-                          <button
-                            type="button"
-                            onClick={() => removeFile(index)}
-                            className="text-muted-foreground hover:text-destructive"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+        {/* Ткань */}
+        <div className="mb-6">
+          <p className="text-sm font-semibold text-foreground mb-2">
+            Ткань <span className="text-destructive">*</span>
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {fabricTypes.map((fabric) => {
+              const isSelected = watchedValues.fabric === fabric.value
+              return (
+                <label
+                  key={fabric.value}
+                  className={`rounded-full border px-3.5 py-1.5 text-sm cursor-pointer transition-colors ${
+                    isSelected
+                      ? 'border-gold-dark bg-accent/15 text-gold-dark font-semibold'
+                      : 'border-border text-foreground hover:border-gold'
+                  }`}
+                >
+                  <input type="radio" {...register('fabric')} value={fabric.value} className="sr-only" />
+                  {fabric.label}
+                </label>
+              )
+            })}
+          </div>
+          {errors.fabric && (
+            <p className="text-xs text-destructive mt-1">{errors.fabric.message}</p>
+          )}
+        </div>
 
-                <div className="flex items-start gap-3 pt-2">
-                  <Checkbox id="privacy-policy" required />
-                  <label htmlFor="privacy-policy" className="text-xs text-muted-foreground leading-relaxed">
-                    Нажимая кнопку «Отправить», вы соглашаетесь с{' '}
-                    <a 
-                      href="https://velvet-pro.ru/politica.pdf" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-accent hover:underline"
-                    >
-                      политикой конфиденциальности
-                    </a>
-                  </label>
+        {/* Контакты */}
+        <div className="mb-6">
+          <p className="text-xs font-bold uppercase tracking-wider text-gold-dark mb-3">Контакты</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+            <div>
+              <label htmlFor="name" className="block text-sm font-semibold text-foreground mb-1.5">
+                Ваше имя <span className="text-destructive">*</span>
+              </label>
+              <Input id="name" {...register('name')} placeholder="Иван Петров" />
+              {errors.name && (
+                <p className="text-xs text-destructive mt-1">{errors.name.message}</p>
+              )}
+            </div>
+            <div>
+              <label htmlFor="company" className="block text-sm font-semibold text-foreground mb-1.5">
+                Организация
+              </label>
+              <Input id="company" {...register('company')} placeholder="Название театра / ДК" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="email" className="block text-sm font-semibold text-foreground mb-1.5">
+                Email <span className="text-destructive">*</span>
+              </label>
+              <Input id="email" {...register('email')} type="email" placeholder="email@example.com" />
+              {errors.email && (
+                <p className="text-xs text-destructive mt-1">{errors.email.message}</p>
+              )}
+            </div>
+            <div>
+              <label htmlFor="phone" className="block text-sm font-semibold text-foreground mb-1.5">
+                Телефон <span className="text-destructive">*</span>
+              </label>
+              <Input
+                id="phone"
+                {...register('phone')}
+                placeholder="+7 (999) 123-45-67"
+                onChange={(e) => {
+                  const formatted = formatPhone(e.target.value)
+                  setValue('phone', formatted)
+                }}
+              />
+              {errors.phone && (
+                <p className="text-xs text-destructive mt-1">{errors.phone.message}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Комментарий */}
+        <div className="mb-4">
+          <label htmlFor="comment" className="block text-sm font-semibold text-foreground mb-1.5">
+            Комментарий
+          </label>
+          <Textarea id="comment" {...register('comment')} placeholder="Дополнительная информация о проекте" rows={2} />
+        </div>
+
+        {/* Вложения */}
+        <div className="mb-4">
+          <input
+            type="file"
+            multiple
+            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+            onChange={handleFileChange}
+            className="hidden"
+            id="file-upload"
+          />
+          <label
+            htmlFor="file-upload"
+            className="flex items-center gap-2.5 rounded-md border border-dashed border-border px-3.5 py-2.5 text-sm text-muted-foreground cursor-pointer hover:border-gold transition-colors"
+          >
+            <Paperclip className="h-4 w-4 text-gold-dark flex-none" />
+            Прикрепить чертежи, фото, ТЗ — PDF, DOC, JPG, PNG, до 10 МБ на файл
+          </label>
+          {fileErrors.length > 0 && (
+            <div className="mt-2 space-y-1">
+              {fileErrors.map((error, index) => (
+                <p key={index} className="text-xs text-destructive">{error}</p>
+              ))}
+            </div>
+          )}
+          {files.length > 0 && (
+            <div className="mt-2 space-y-1">
+              {files.map((file, index) => (
+                <div key={index} className="flex items-center justify-between text-sm bg-secondary p-2 rounded">
+                  <span className="truncate">{file.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeFile(index)}
+                    aria-label={`Удалить ${file.name}`}
+                    className="text-muted-foreground hover:text-destructive flex-none ml-2"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Политика */}
+        <div className="flex items-start gap-2.5 mb-4">
+          <Checkbox id="privacy-policy" required className="mt-0.5" />
+          <label htmlFor="privacy-policy" className="text-xs text-muted-foreground leading-relaxed">
+            Нажимая кнопку «Получить расчет», вы соглашаетесь с{' '}
+            <a
+              href="https://velvet-pro.ru/politica.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gold-dark hover:underline"
+            >
+              политикой конфиденциальности
+            </a>
+          </label>
         </div>
 
         {/* Submit error */}
-        {submitError && currentStep === steps.length && (
-          <div className="px-6 pb-2">
-            <p className="text-sm text-destructive" role="alert">{submitError}</p>
-          </div>
+        {submitError && (
+          <p className="text-sm text-destructive mb-3" role="alert">{submitError}</p>
         )}
 
-        {/* Footer */}
-        <div className="sticky bottom-0 bg-card border-t border-border px-6 py-4 flex justify-between">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={prevStep}
-            disabled={currentStep === 1}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Назад
-          </Button>
-
-          {currentStep < steps.length ? (
-            <Button type="button" onClick={nextStep}>
-              Далее
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full bg-gold text-navy-dark hover:bg-gold-light font-bold text-base h-12"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Отправка...
+            </>
           ) : (
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Отправка...
-                </>
-              ) : (
-                'Отправить заявку'
-              )}
-            </Button>
+            'Получить расчет стоимости'
           )}
-        </div>
+        </Button>
+        <p className="text-xs text-muted-foreground text-center mt-2.5">
+          Ответим в течение 24 часов · Бесплатно и ни к чему не обязывает
+        </p>
       </form>
     </div>
   )
