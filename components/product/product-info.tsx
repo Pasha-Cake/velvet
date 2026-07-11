@@ -135,7 +135,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
       {/* Quiz dialog */}
       <Dialog open={quizOpen} onOpenChange={setQuizOpen}>
-        <DialogContent showCloseButton={false} className="max-w-2xl max-h-[90vh] overflow-y-auto p-0">
+        <DialogContent showCloseButton={false} className="sm:max-w-4xl max-h-[90vh] overflow-y-auto p-0">
           <DialogTitle className="sr-only">Расчет стоимости</DialogTitle>
           <QuizForm onClose={() => setQuizOpen(false)} />
         </DialogContent>
