@@ -12,9 +12,9 @@ const navigation = {
     { name: 'Порталы', href: '#catalog' },
   ],
   company: [
-    { name: 'О компании', href: '#' },
+    { name: 'О компании', href: '#advantages' },
     { name: 'Наши проекты', href: '#gallery' },
-    { name: 'Как мы работаем', href: '#' },
+    { name: 'Как мы работаем', href: '#how-we-work' },
     { name: 'Контакты', href: '#contacts' },
   ],
   legal: [

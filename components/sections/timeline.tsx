@@ -5,7 +5,7 @@ import { timelineSteps } from '@/lib/data'
 
 export function TimelineSection() {
   return (
-    <section className="py-24 bg-background">
+    <section id="how-we-work" className="py-24 bg-background">
       <div className="mx-auto max-w-7xl px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
