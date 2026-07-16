@@ -1,6 +1,14 @@
 import nodemailer from 'nodemailer'
+import { venueTypes, clothingTypes as clothingTypeOptions, fabricTypes } from '@/lib/data'
 
 const RECIPIENTS = ['info@velvet-pro.ru', 'pirogov@cn.ru']
+
+/**
+ * Преобразует внутреннее значение опции (slug) в русскую подпись из словаря.
+ * Если значение неизвестно — возвращает его как есть, чтобы письмо не сломалось.
+ */
+const labelOf = (options: { value: string; label: string }[], value: string) =>
+  options.find((o) => o.value === value)?.label ?? value
 
 /**
  * Экранирует пользовательский ввод для безопасной вставки в HTML письма.
@@ -77,19 +85,21 @@ interface EmailAttachment {
 }
 
 export async function sendQuizEmail(data: QuizData, attachments?: EmailAttachment[]): Promise<boolean> {
-  const clothingTypesText = Array.isArray(data.clothingTypes) 
-    ? data.clothingTypes.map(escapeHtml).join(', ') 
-    : escapeHtml(data.clothingTypes)
+  const venueTypeLabel = labelOf(venueTypes, data.venueType)
+  const fabricLabel = labelOf(fabricTypes, data.fabric)
+  const clothingTypesText = Array.isArray(data.clothingTypes)
+    ? data.clothingTypes.map((v) => escapeHtml(labelOf(clothingTypeOptions, v))).join(', ')
+    : escapeHtml(labelOf(clothingTypeOptions, data.clothingTypes))
 
   const html = `
-    <h2>Новая заявка с квиза на сайте Velvet-Pro</h2>
+    <h2>Новая заявка с сайта odezhda-sceny.velvet-pro.ru</h2>
     <p><strong>Дата:</strong> ${new Date().toLocaleString('ru-RU')}</p>
     <hr>
     <h3>Информация о проекте</h3>
     <table style="border-collapse: collapse; width: 100%;">
       <tr>
         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Тип помещения:</strong></td>
-        <td style="padding: 8px; border: 1px solid #ddd;">${escapeHtml(data.venueType)}</td>
+        <td style="padding: 8px; border: 1px solid #ddd;">${escapeHtml(venueTypeLabel)}</td>
       </tr>
       <tr>
         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Тип изделий:</strong></td>
@@ -101,7 +111,7 @@ export async function sendQuizEmail(data: QuizData, attachments?: EmailAttachmen
       </tr>
       <tr>
         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Ткань:</strong></td>
-        <td style="padding: 8px; border: 1px solid #ddd;">${escapeHtml(data.fabric)}</td>
+        <td style="padding: 8px; border: 1px solid #ddd;">${escapeHtml(fabricLabel)}</td>
       </tr>
     </table>
     <h3>Контактные данные</h3>
@@ -138,7 +148,7 @@ export async function sendQuizEmail(data: QuizData, attachments?: EmailAttachmen
     await transporter.sendMail({
       from: process.env.SMTP_FROM || 'noreply@velvet-pro.ru',
       to: RECIPIENTS,
-      subject: sanitizeSubject(`Новая заявка с квиза: ${data.name} - ${data.venueType}`),
+      subject: sanitizeSubject(`Запрос Одежда сцены: ${data.name} - ${venueTypeLabel}`),
       html,
       ...(attachments && attachments.length > 0
         ? { attachments: attachments.map((a) => ({ filename: a.filename, content: a.content, contentType: a.contentType })) }
